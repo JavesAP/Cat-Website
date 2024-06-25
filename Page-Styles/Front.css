@@ -1,0 +1,238 @@
+body {
+    position: relative;
+    background-color: rgb(255, 255, 222);
+}
+
+body p,
+.cat-information span { font-family: "ABeeZee", sans-serif; }
+
+.purpose-box h2,
+.navbar,
+.input-container label,
+#button-container button,
+.cat-information button,
+.alphabetizer,
+.hairless-count-container,
+.close-modal { font-family: "Silkscreen", sans-serif; }
+
+.navbar {
+    padding: 15px 25px;
+    background-color: rgb(255, 203, 136);
+    cursor: default;
+    font-size: 20px;
+    border-radius: 25px;
+    border: black 2px solid;
+}
+
+.main-container .navbar { flex-wrap: nowrap; }
+
+.text-span {
+    font-size: 28px;
+    color: white;
+}
+
+.main-container {
+    height: 100%;
+    background-color: white;
+    padding: 20px;
+    border: orange 5px outset;
+}
+
+.fav-span {
+    cursor: pointer;
+    padding: 10px;
+    background-image: linear-gradient(45deg, aliceblue, cornflowerblue);
+    border: azure 2px solid;
+    border-radius: 15px;
+}
+
+.text-span { margin-right: auto; }
+
+.input-and-explain {
+    padding: 20px 40px;
+    justify-content: space-around;
+}
+
+.input-container input { display: block; }
+
+.input-container input {
+    border-radius: 20px;
+    height: 20px;
+    padding: 0 7px;
+}
+
+.input-paragraphs {
+    max-width: 370px;
+    text-align: start;
+}
+
+.input-paragraph { border-bottom: black 2px dashed; }
+
+#button-container,
+.modal-button-and-count {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+}
+
+#button-container button,
+.alphabetizer {
+    height: 30px;
+    cursor: pointer;
+    border-radius: 17px;
+    font-size: 18px;
+    border: solid 1px black;
+}
+
+.cat {
+    background-image: linear-gradient(135deg, lemonchiffon, darkorange);
+    width: 75px;
+}
+
+.alphabetizer {
+    width: 40px;
+    background-image: linear-gradient(45deg, aliceblue, cornflowerblue);
+}
+
+.cat-grid {
+    width: 100%;
+    text-align: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+    background-color: lightsteelblue;
+    padding: 6px;
+    max-height: 600px;
+    overflow: scroll;
+}
+
+.cats-in-grid,
+.cats-in-modal {
+    max-width: 100%;
+    position: relative;
+}
+
+.cats-in-grid::after,
+.cats-in-modal::after { 
+    content: '';
+    padding: 30px 0;
+}
+
+.cats-in-grid > *,
+.cats-in-modal > * { pointer-events: none; }
+
+.cat-information,
+.fav-modal {
+    background-color: lightyellow;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: all 0.35s ease-in;
+    opacity: 0;
+}
+
+.cat-information.open,
+.fav-modal.opened  {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cat-information.open button { pointer-events: stroke; }
+
+.cat-information span { 
+    font-size: 16px;
+    display: block;
+    margin: 6px;
+    text-align: start;
+}
+
+.cat-information span:first-child {
+    border: lightgoldenrodyellow 2px outset;
+    background-image: linear-gradient(135deg, lemonchiffon, darkorange);
+    width: fit-content;
+    padding: 3px;
+    border-radius: 7px;
+}
+
+.close-button,
+.favorites-button {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.close-button {
+    background-image: linear-gradient(135deg, coral, chocolate); 
+}
+
+.favorites-button {
+    margin-left: 10px;
+    background-image: linear-gradient(135deg, mediumaquamarine, mediumseagreen);
+}
+
+
+
+
+
+.fav-modal { visibility: hidden; }
+
+.modal-button-and-count {
+    max-width: 83%;
+    gap: 0;
+    text-align: center;
+}
+
+.modal-button-and-count button { margin: auto; }
+
+.hairless-count-container {
+    max-width: max-content;
+    text-align: center;
+    padding: 10px 25px;
+    border: white 7px double;
+    border-radius: 15px;
+    background-color: salmon;
+    color: white;
+}
+
+.fav-modal .cat-grid {
+    grid-template-columns: repeat(3, 1fr);
+    width: 85%;
+    margin: 10px auto;
+}
+
+.close-modal {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 7px;
+    background-color: red;
+    border: white 7px double;
+    color: white;
+    border-radius: 7px;
+}
+
+@media (max-width: 1200px) {
+    .fav-modal .cat-grid { 
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+        width: 92%;
+        gap: 7px;
+    }
+
+    .modal-button-and-count { max-width: 77%; }
+}
+
+@media (max-width: 600px) {
+  .cat-grid {
+    max-height: 425px;
+    width: 95%;
+    margin: 0 auto;
+  }
+
+  .fav-modal .cat-grid { max-height: 80%; }
+}

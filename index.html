@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Cat Motivation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="Page-Styles/Front.css">
+        <link rel="stylesheet" href="Page-Styles/Base-styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=ABeeZee:ital@0;1&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div class="large-width main-container">
+            <div class="flexbox navbar large-width">
+                <span class="text-span">Random Cat Generator</span>
+                <span class="fav-span" data-fav="favorites">Favorites</span>
+            </div>
+            <div class="purpose-box">
+                <h2>What is this?</h2>
+                <p>This web page will allow you to generate random images of cats...<br> 
+                    Find pictures of cats as well as their information and add them to your favorites.<br> 
+                    Certain pictures will have "Hairless" and when added to favorites will contribute to the hairless count</p>
+            </div>
+            <div class="flexbox input-and-explain">
+                <div class="input-container">
+                    <label for="species">Species</label><br>
+                    <input id="species" type="text"><br>
+                    <label for="amount">Amount</label><br>
+                    <input id="amount" type="number">
+                </div>
+                <div class="input-paragraphs">
+                    <div class="input-paragraph">
+                        <p>In the species box whatever species you type in will be the species of cat you get in return.</p>
+                    </div>
+                    <div class="input-paragraph">
+                        <p>In the amount box type in the number of cat images you would like to generate</p>
+                    </div>
+                    <div>
+                        <p>Once you've generated your images you can remove or add it to your favorites. If you would like to remove all images click CAT again.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="button-container">
+                <button type="button" class="cat">Cat</button>
+                <button type="button" class="alphabetizer" data-organizer="grid">A-Z</button>
+            </div>
+            <div>
+                <div class="cat-grid"></div>
+            </div>
+        </div>
+
+        <!-- Favorites Modal -->
+        <div class="fav-modal" id="favorites">
+            <div class="modal-button-and-count">
+                <button type="button" class="alphabetizer" data-organizer="fav-modal">A-Z</button>
+                <div class="hairless-count-container">
+                    <span class="hairless-count">Hairless Cat Count: <strong id="hairless-number">0</strong></span>
+                </div>
+            </div>
+            <div class="cat-grid" data-modalG="grid"></div>
+            <span class="close-modal">X</span>
+        </div>
+        <script type="text/javascript" src="Page-JS/page.js"></script>
+    </body>
+</html> 
