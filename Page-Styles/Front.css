@@ -228,11 +228,26 @@ body p,
 }
 
 @media (max-width: 600px) {
-  .cat-grid {
-    max-height: 425px;
-    width: 95%;
-    margin: 0 auto;
+  .text-span { font-size: 24px;}
+  .fav-span {
+    padding: 7px;
+    font-size: 18px;
   }
 
-  .fav-modal .cat-grid { max-height: 80%; }
+  .cat-grid {
+    max-height: max-content;
+    width: 95%;
+    margin: 0 auto;
+    overflow: initial;
+  }
+
+  .fav-modal .cat-grid { 
+    max-height: 80%;
+    width: 85%;
+    overflow: scroll;
+ }
+  .hairless-count-container {
+    font-size: 14px;
+    padding: 5px;
+  }
 }

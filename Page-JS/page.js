@@ -1,32 +1,34 @@
-let url = 'https://api.thecatapi.com/v1/images/search?';
-const speciesInput = document.querySelector('#species');
-const amountInput = document.querySelector('#amount');
-const breedInfoInput = document.querySelector('#breed-info');
+const uneditedUrl = 'https://api.thecatapi.com/v1/images/search?';
 const catGrid = document.querySelector('.cat-grid');
 const favModal = document.querySelector('[data-modalG]');
-const hairlessCount = document.querySelector('.hairless-count');
-const hairlessNumber = document.getElementById("hairless-number");
+const hairlessCount = document.getElementById("hairless-number");
 
-const button = document.querySelector('.cat');
 const alphabetizerButtons = document.querySelectorAll('.alphabetizer');
-const alphabetButtons = document.querySelectorAll('[data-organizer]');
+const specificAttributeAlphabetButtons = document.querySelectorAll('[data-organizer]');
 
 const favoriteTab = document.querySelector('[data-fav]');
-const favoriteCloser = document.querySelector(".close-modal");
+const favoriteTabCloser = document.querySelector(".close-modal");
 
-
-const data = [];
-let LStorage = localStorage.getItem('favorites');
-
-if (!LStorage) {
-  localStorage.setItem('favorites', JSON.stringify(data));
+// Local storage
+function LSInitialLoad () {
+  localStorage.setItem('favorites', JSON.stringify([]));
   LStorage = localStorage.getItem('favorites');
 }
-let parsedLStorage = JSON.parse(LStorage);
 
-let originalFetch;
+let LStorage = localStorage.getItem('favorites');
+if (!LStorage) LSInitialLoad()
+let LSFavoriteImages = JSON.parse(LStorage);
 
-function catPicCall (e) {
+let originalFetchedCatObjects;
+
+function removeImageFromLS (img) {
+  const LSItem = LSFavoriteImages.filter((obj) => obj.id != img.dataset.id);
+  LSFavoriteImages = LSItem;
+  localStorage.setItem('favorites', JSON.stringify(LSItem));
+}
+
+// Cat image click animation
+function clickAnimationCall (e) {
   const clicked = e.target;
   if (!clicked.lastElementChild) {
     return
@@ -37,17 +39,43 @@ function catPicCall (e) {
   }
 } 
 
+async function urlCreator (url) {
+  let newUrl = url;
+  const speciesInput = document.querySelector('#species');
+  const amountInput = document.querySelector('#amount');
+  if (speciesInput.value) {
+    // Fetches cat breed array and matches obj names to apply breed id to URL
+    await fetch('https://api.thecatapi.com/v1/breeds')
+    .then((val) => val.json())
+    .then((arr) => {
+      const catBreed = speciesInput.value; 
+      const matching = arr.find((obj) => obj.name === catBreed);
+      if (catBreed && matching != undefined) newUrl += `breed_ids=${matching.id}&`;
+    });
+  }
+  if (amountInput.value) newUrl += `limit=${amountInput.value}&`;
+  newUrl += 'has_breeds=1';
+
+  return await fetch(newUrl, {headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': 'no-cors',
+    'x-content-type-options': 'no sniff',
+    'x-api-key': 'live_KhczGvR3GTtbmoCvARNv6PvI0zPaBu5oFVDWmdBbdAz7XTRBGqPSQjZbHgg6DIVF'
+  }});
+}
+
 function catCreator (url, id) {
   const catImg = document.createElement("img");
   catImg.src = url;
   catImg.alt = "Cat picture";
 
   const imgDiv = document.createElement("div");
+  // sets unique img id as attribute value
   imgDiv.setAttribute('data-id', id);
   imgDiv.appendChild(catImg);
 
   // For images that are made from localStorage
-  if (!originalFetch) {
+  if (!originalFetchedCatObjects) {
     imgDiv.classList.add('cats-in-modal');
     favModal.appendChild(imgDiv);
   } else {
@@ -58,7 +86,7 @@ function catCreator (url, id) {
   return imgDiv
 }
 
-// Constructs the cat information div
+// Constructs the cat information div and fetched info
 function catInformationConstructor (object, appendTo) {
   object.breeds.map((val) => { 
     const infoArr = [val.name, val.life_span, val.origin, val.temperament];
@@ -76,16 +104,17 @@ function catInformationConstructor (object, appendTo) {
         }
       });
     }
-
     if (val.hairless === 1) {
       const infoSpan = document.createElement("span");
       infoSpan.textContent = "Hairless: Yes"
       appendTo.appendChild(infoSpan);
     }
   });
+}
 
-  const twoTypes = ['X', 'Favorite'];
-  twoTypes.forEach((button) => {
+// Constructs/adds remove and favorite buttons 
+function buttonCreator (arrOfButtons, appendTo) {
+  arrOfButtons.forEach((button) => {
     const newButton = document.createElement('button');
     newButton.type = 'button';
     newButton.textContent = button;
@@ -94,27 +123,27 @@ function catInformationConstructor (object, appendTo) {
   });
 }
 
+// Adds or subtracts one from Hairless Count
+function adjustHairlessCount (clickedButton) {
+  const addingFavoritesBool = clickedButton.previousSibling.previousSibling.textContent.includes('Hairless');
+  const removingFavoritesBool = clickedButton.previousSibling.textContent.includes('Hairless');
+  if (addingFavoritesBool)  hairlessCount.textContent = Number(hairlessCount.textContent) + 1;
+  else if (removingFavoritesBool) hairlessCount.textContent = Number(hairlessCount.textContent) - 1;
+}
+
 // Adds the image to the favorites grid
 function favAddCall (e) {
   const clicked = e.target;
   let checker;
   const catImageDiv = clicked.parentElement.parentElement;
-  if (originalFetch) checker = originalFetch.map((obj) => obj.id);
-  if (clicked.className === 'favorites-button') {
-    if (checker.includes(catImageDiv.dataset.id)) {
-      originalFetch.forEach((obj) => {
-        if (obj.id === catImageDiv.dataset.id) {
-          parsedLStorage.push(obj);
-          localStorage.setItem('favorites', JSON.stringify(parsedLStorage));
-        }
-      })
-    }
-    if (clicked.previousSibling.previousSibling.textContent.includes('Hairless')) {
-      hairlessNumber.textContent = Number(hairlessNumber.textContent) + 1;
-    }
-    const docFrag = document.createDocumentFragment();
-    docFrag.appendChild(catImageDiv);
-    favModal.appendChild(docFrag);
+  if (originalFetchedCatObjects) checker = originalFetchedCatObjects.map((obj) => obj.id);
+  if (clicked.className === 'favorites-button' && checker.includes(catImageDiv.dataset.id)) {
+    originalFetchedCatObjects.forEach((obj) => {
+      if (obj.id === catImageDiv.dataset.id) LSFavoriteImages.push(obj);
+      localStorage.setItem('favorites', JSON.stringify(LSFavoriteImages));
+    })
+    adjustHairlessCount(clicked);
+    favModal.appendChild(catImageDiv);
     catImageDiv.className = "cats-in-modal";
   }
 }
@@ -124,28 +153,21 @@ function favRemoveCall (e) {
   const clicked = e.target;
   let checker;
   const catImageDiv = clicked.parentElement.parentElement;
-  const docFrag = document.createDocumentFragment();
-  if (originalFetch) checker = originalFetch.map((obj) => obj.id);
+  if (originalFetchedCatObjects) checker = originalFetchedCatObjects.map((obj) => obj.id);
   if (clicked.className === 'close-button') {
     if (checker && checker.includes(catImageDiv.dataset.id)) {
-      docFrag.appendChild(catImageDiv);
-      catGrid.appendChild(docFrag);
+      removeImageFromLS(catImageDiv);
+      catGrid.appendChild(catImageDiv);
       catImageDiv.className = "cats-in-grid";
     } else {
-      let LSItem = parsedLStorage.filter((obj) => obj.id != catImageDiv.dataset.id);
-      parsedLStorage = LSItem;
-      localStorage.setItem('favorites', JSON.stringify(LSItem));
-      
+      removeImageFromLS(catImageDiv);
       catImageDiv.remove();
     }
-
-    if (clicked.previousSibling.textContent.includes('Hairless')) {
-      hairlessNumber.textContent = Number(hairlessNumber.textContent) - 1;
-    }
+    adjustHairlessCount(clicked);
   }
 }
 
-// Removes the image completely
+// Removes image from catGrid
 function removeCall (e) {
   const clicked = e.target;
   if (clicked.className === 'close-button') {
@@ -168,33 +190,29 @@ function catOrganizer (arr, selectors, className) {
   })
 }
 
+// Calls all functions that contribute to creating a cat
+function completeCatConstructor (object) {
+  const catDiv = catCreator(object.url, object.id);
+  const information = document.createElement("div");
+  information.className = 'cat-information';
+  catInformationConstructor(object, information);
+  buttonCreator(['X', 'Favorites'], information);
+  catDiv.appendChild(information);
+  // for LS
+  return catDiv
+}
+
 // Button that generates cats
-button.addEventListener('click', async function () {
+document.querySelector('.cat').addEventListener('click', async function () {
   if (catGrid.innerHTML) catGrid.innerHTML = '';
-
-  if (speciesInput.value) url.endsWith("?") ? url += `breed_ids=${speciesInput.value.toLowerCase().trim()}` : url += `&breed_ids=${speciesInput.value.toLowerCase().trim()}`;
-  if (amountInput.value) url.endsWith("?") ? url += `limit=${amountInput.value}` : url += `&limit=${amountInput.value}`;
-  url.endsWith("?") ? url += 'has_breeds=1' : url += '&has_breeds=1';
-
-  const catArr = fetch(url, {headers: {
-    'Content-Type': 'application/json',
-    'x-content-type-options': 'no sniff',
-    'x-api-key': 'live_KhczGvR3GTtbmoCvARNv6PvI0zPaBu5oFVDWmdBbdAz7XTRBGqPSQjZbHgg6DIVF'
-  }});
-
-  const parsedArr = catArr.then((val) => val.json());
-
-  parsedArr
-    .then((arr) => { 
-      originalFetch = arr;
-      arr.forEach((obj) => { 
-        const catDiv = catCreator(obj.url, obj.id);
-        const information = document.createElement("div");
-        information.className = 'cat-information';
-        catInformationConstructor(obj, information);
-        catDiv.appendChild(information);
-    })});
-    url = 'https://api.thecatapi.com/v1/images/search?';
+  urlCreator(uneditedUrl)
+  .then((val) => val.json())
+  .then((arr) => { 
+    originalFetchedCatObjects = arr;
+    arr.forEach((obj) => { 
+      completeCatConstructor(obj);
+  })})
+  .catch((error) => console.log("Error Fetching Cats:", error));
 }); 
 
 // Creates the sorted array
@@ -207,19 +225,19 @@ function alphabeticalArr (button) {
     const catName = JSON.stringify(obj.lastElementChild.firstChild.textContent).slice(7, this.length - 1);
     catNamesArr.push(catName);
   })
-  if (button.textContent === "A-Z") {
+  if (button.textContent === "Z-A") {
     catNamesArr.sort();
-    button.textContent = "Z-A";
+    button.textContent = "A-Z";
   }
-  else if (button.textContent === "Z-A") {
+  else if (button.textContent === "A-Z") {
     catNamesArr.sort();
     catNamesArr.reverse();
-    button.textContent = "A-Z";
+    button.textContent = "Z-A";
   }
   if (images[0] != null) catOrganizer(catNamesArr, images, images[0].className);
 }
 
-alphabetButtons.forEach((button) => {
+specificAttributeAlphabetButtons.forEach((button) => {
   button.addEventListener('click', function () {
     const dataValue = this.dataset.organizer;
     if (favModal.hasChildNodes() && this.parentElement.parentElement.className.includes(dataValue)) alphabeticalArr(button);
@@ -228,35 +246,25 @@ alphabetButtons.forEach((button) => {
 });
 
 // Event listeners
-catGrid.addEventListener('click', catPicCall);
-favModal.addEventListener('click', catPicCall);
+catGrid.addEventListener('click', clickAnimationCall);
+catGrid.addEventListener('click', favAddCall);
+catGrid.addEventListener('click', removeCall);
 
+favModal.addEventListener('click', clickAnimationCall);
+favModal.addEventListener('click', favRemoveCall);
 
 favoriteTab.addEventListener('click', function () {
   const modalId = this.dataset.fav;
   document.getElementById(modalId).classList.add('opened');
 });
-
-favoriteCloser.addEventListener('click', function () {
+favoriteTabCloser.addEventListener('click', function () {
   this.parentElement.classList.remove('opened');
 });
 
-catGrid.addEventListener('click', favAddCall);
-
-catGrid.addEventListener('click', removeCall);
-favModal.addEventListener('click', favRemoveCall);
-
 // Local storage cats
-parsedLStorage.forEach((obj) => {
-  const catDiv = catCreator(obj.url, obj.id);
-
-  const information = document.createElement("div");
-  information.className = 'cat-information';
-
-  catInformationConstructor(obj, information);
-
-  catDiv.appendChild(information);
-  if (catDiv.lastChild.childElementCount > 6) {
-    hairlessNumber.textContent = Number(hairlessNumber.textContent) + 1;
+LSFavoriteImages.forEach((obj) => {
+  const createdCatDiv = completeCatConstructor(obj);
+  if (createdCatDiv.lastChild.childElementCount > 6) {
+    hairlessCount.textContent = Number(hairlessCount.textContent) + 1;
   }
 })
